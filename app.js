@@ -763,3 +763,12 @@ async function runAutomatedTest() {
     testBtn.classList.remove('btn-disabled');
   }
 }
+
+// --- Digital Hidden Watermark ---
+(function() {
+  document.body.setAttribute('data-watermark-falo', 'Falo x Force Cheng 2026/06/15');
+  document.body.setAttribute('data-watermark-crypt', 'SHA256: FaloForceCheng20260615FinTaxPOCVersion1.0.0');
+  
+  console.log("%c© Falo x Force Cheng 2026/6/15", "color: #14b8a6; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px rgba(20,184,166,0.3);");
+  console.log("%cDigital Watermark Verified: SHA256: FaloForceCheng20260615FinTaxPOCVersion1.0.0", "color: #6366f1; font-family: monospace; font-size: 11px;");
+})();

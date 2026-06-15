@@ -775,3 +775,34 @@ tr.highlight-row {
   background: linear-gradient(90deg, var(--accent-indigo), var(--accent-teal));
   transition: width 0.3s ease;
 }
+
+/* Diagonal Background Watermarks for Falo x Force Cheng */
+body::before {
+  content: "Falo x Force Cheng 2026/6/15";
+  position: fixed;
+  top: 15%;
+  left: -5%;
+  font-family: monospace;
+  font-size: 3rem;
+  color: var(--text-primary);
+  opacity: 0.012;
+  transform: rotate(-15deg);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+}
+
+body::after {
+  content: "Falo x Force Cheng 2026/6/15";
+  position: fixed;
+  bottom: 20%;
+  right: -5%;
+  font-family: monospace;
+  font-size: 3rem;
+  color: var(--text-primary);
+  opacity: 0.012;
+  transform: rotate(-15deg);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+}
