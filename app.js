@@ -1,10 +1,10 @@
-// app.js - Crawler Comparison Dashboard Interactivity
+// app.js - Crawler Comparison Dashboard Interactivity (v2.0)
 
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initCharts();
   initDatasetViewer();
-  console.log("Falo x Force Cheng Crawler Comparison Dashboard initialized.");
+  console.log("Falo x Force Cheng Crawler Comparison Dashboard v2.0 initialized.");
 });
 
 /* Tab Switching */
@@ -136,7 +136,7 @@ function initCharts() {
         },
         y1: {
           position: "right",
-          grid: { drawOnChartArea: false }, // Only show left axis grid lines
+          grid: { drawOnChartArea: false },
           ticks: { color: "#94a3b8" },
           title: {
             display: true,
@@ -232,48 +232,82 @@ function renderTable(records) {
 }
 
 function initDatasetViewer() {
-  const searchInput = document.getElementById("searchInput");
-  const marketFilter = document.getElementById("marketFilter");
-  const typeFilter = document.getElementById("typeFilter");
-  const resetBtn = document.getElementById("resetBtn");
+  const mopsMarket = document.getElementById("mopsMarket");
+  const mopsYear = document.getElementById("mopsYear");
+  const mopsMonth = document.getElementById("mopsMonth");
+  const mopsCompany = document.getElementById("mopsCompany");
+  const mopsName = document.getElementById("mopsName");
+  
+  const mopsSearchBtn = document.getElementById("mopsSearchBtn");
+  const mopsResetBtn = document.getElementById("mopsResetBtn");
 
   const performFilter = () => {
     if (!datasetLoaded) return;
     
-    const query = searchInput.value.toLowerCase().trim();
-    const market = marketFilter.value;
-    const type = typeFilter.value;
+    const market = mopsMarket.value;
+    const year = mopsYear.value.trim();
+    const month = mopsMonth.value;
+    const company = mopsCompany.value.toLowerCase().trim();
+    const name = mopsName.value.toLowerCase().trim();
 
     const filtered = masterRecords.filter(r => {
-      // 1. Search Query Filter (Fuzzy Search across multiple fields)
-      const matchQuery = !query || 
-        r['公司簡稱'].toLowerCase().includes(query) ||
-        r['代號'].includes(query) ||
-        r['新任者'].toLowerCase().includes(query) ||
-        r['舊任者'].toLowerCase().includes(query) ||
-        r['異動原因'].toLowerCase().includes(query) ||
-        r['異動情形'].toLowerCase().includes(query);
-
-      // 2. Market Filter
+      // 1. Market Filter
       const matchMarket = !market || r['市場'] === market;
+      
+      // 2. Year Filter (Extract first part of ROC date YYY/MM/DD)
+      let matchYear = true;
+      if (year) {
+        const dateParts = r['公告日期'].split('/');
+        matchYear = dateParts.length > 0 && dateParts[0] === year;
+      }
 
-      // 3. Type Filter
-      const matchType = !type || r['異動情形'].includes(type);
+      // 3. Month Filter (Extract middle part of ROC date YYY/MM/DD)
+      let matchMonth = true;
+      if (month) {
+        const dateParts = r['公告日期'].split('/');
+        matchMonth = dateParts.length > 1 && dateParts[1] === month;
+      }
 
-      return matchQuery && matchMarket && matchType;
+      // 4. Company Code or Name Filter
+      const matchCompany = !company || 
+        r['代號'].includes(company) ||
+        r['公司簡稱'].toLowerCase().includes(company);
+
+      // 5. Person Name Filter
+      const matchName = !name ||
+        r['新任者'].toLowerCase().includes(name) ||
+        r['舊任者'].toLowerCase().includes(name);
+
+      return matchMarket && matchYear && matchMonth && matchCompany && matchName;
     });
 
     renderTable(filtered);
   };
 
-  searchInput.addEventListener("keyup", performFilter);
-  marketFilter.addEventListener("change", performFilter);
-  typeFilter.addEventListener("change", performFilter);
+  // Perform search on button click
+  mopsSearchBtn.addEventListener("click", performFilter);
 
-  resetBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    marketFilter.value = "";
-    typeFilter.value = "";
+  // Press Enter key to search in input fields
+  [mopsYear, mopsCompany, mopsName].forEach(input => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        performFilter();
+      }
+    });
+  });
+
+  // Real-time update for select dropdowns
+  [mopsMarket, mopsMonth].forEach(select => {
+    select.addEventListener("change", performFilter);
+  });
+
+  // Reset fields and search
+  mopsResetBtn.addEventListener("click", () => {
+    mopsMarket.value = "";
+    mopsYear.value = "";
+    mopsMonth.value = "";
+    mopsCompany.value = "";
+    mopsName.value = "";
     performFilter();
   });
 }

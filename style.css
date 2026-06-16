@@ -151,7 +151,7 @@ header {
 
 .grid-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
   margin: 20px 0;
 }
@@ -188,6 +188,55 @@ header {
   font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 0;
+}
+
+/* Correction Alert & Download Pack Styles */
+.correction-alert {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 4px solid var(--combined-color);
+  padding: 15px 20px;
+  border-radius: 4px 12px 12px 4px;
+  margin: 20px 0;
+  font-size: 13.5px;
+  color: #fbbf24;
+  line-height: 1.6;
+}
+
+.correction-alert ul {
+  margin-top: 8px;
+  margin-left: 20px;
+}
+
+.correction-alert li {
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.download-pack-card {
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 20px;
+}
+
+.download-pack-card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.download-pack-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 15px;
+}
+
+.pack-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.pack-buttons .btn {
+  font-family: inherit;
 }
 
 /* Tabs */
@@ -453,7 +502,7 @@ tr:hover {
   border-color: rgba(59, 130, 246, 0.5);
 }
 
-/* Tab 3: Dataset Viewer & Filters */
+/* Tab 3: Dataset Viewer & MOPS Search Form Layout */
 .dataset-controls h3 {
   font-size: 16px;
   margin-bottom: 6px;
@@ -466,42 +515,65 @@ tr:hover {
   flex-wrap: wrap;
 }
 
-.filter-bar {
+.mops-search-form {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 15px;
+}
+
+.mops-search-form .form-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--combined-color);
+  margin-bottom: 15px;
   display: flex;
-  gap: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  flex-wrap: wrap;
   align-items: center;
+  gap: 6px;
 }
 
-.filter-bar input[type="text"] {
-  flex-grow: 1;
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group select {
   background: #0f172a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 13px;
-  min-width: 250px;
+  width: 100%;
 }
 
-.filter-bar input[type="text"]:focus {
+.form-group input[type="text"]:focus,
+.form-group select:focus {
   outline: none;
-  border-color: var(--chatgpt-color);
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+  border-color: var(--gemini-color);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.25);
 }
 
-.filter-bar select {
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .dataset-meta {
