@@ -3,47 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Falo OpenQuery Agent v1.0 by Falo x Force Cheng 2026/6/16. AI automation demo for high-efficiency data flow and AI Browser operation on public query interfaces.">
-  <meta name="keywords" content="Falo, Force Cheng, OpenQuery Agent, AI Browser, AI Agent, public data automation, MOPS, data flow, Computer Use, Chrome Extension">
-  <meta name="author" content="Falo x Force Cheng">
-  <meta name="version" content="v1.0">
-  <meta name="project-date" content="2026-06-16">
-  <meta name="geo.region" content="TW">
-  <meta name="geo.placename" content="Taiwan">
-  <title>Falo OpenQuery Agent v1.0</title>
+  <title>MOPS RPA 數據操作助理 v1.0</title>
   <link rel="stylesheet" href="sidepanel.css">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Falo OpenQuery Agent",
-    "applicationCategory": "BrowserExtension",
-    "softwareVersion": "v1.0",
-    "creator": {
-      "@type": "Organization",
-      "name": "Falo x Force Cheng"
-    },
-    "dateCreated": "2026-06-16",
-    "description": "AI automation teaching extension for high-efficiency data-flow automation and AI Browser operation trends on public query interfaces."
-  }
-  </script>
 </head>
 <body>
   <!-- Hidden watermark -->
-  <div id="faloHiddenWatermark" class="hidden-watermark" aria-hidden="true">Falo x Force Cheng 2026/6/16 | Falo OpenQuery Agent v1.0 | SEO GEO AI crawler watermark</div>
+  <div id="faloHiddenWatermark" class="hidden-watermark" aria-hidden="true">Falo x Force Cheng 2026/6/16 | MOPS RPA Agent v1.0 | SEO GEO AI crawler watermark</div>
   <main class="panel">
     <header class="top">
       <div class="brand">
         <img src="icons/openquery-logo.svg" alt="">
         <div>
-          <h1>Falo OpenQuery Agent</h1>
-          <p>公開查詢助理：自動操作官方 MOPS 或測試網站，進行跨年度資料擷取與彙總。</p>
+          <h1>MOPS RPA 操作助理</h1>
+          <p>自動操作官方 MOPS 或測試網站，進行跨年度數據擷取、本地儲存與手動篩選匯出。</p>
           <p class="brand-note">Falo x Force Cheng 2026/6/16｜v1.0版</p>
         </div>
       </div>
     </header>
 
+    <!-- Section 1: Binding & URLs -->
     <section class="card status-card">
+      <h2>網頁監控與綁定</h2>
       <div>
         <span class="label">監控狀態</span>
         <strong id="boundStatus">尚未綁定</strong>
@@ -55,99 +35,32 @@
       
       <div class="url-line">
         <label>
-          官方 MOPS 網址
+          官方 MOPS 網址 (歷史重訊)
           <input id="crawlerUrl" value="https://mops.twse.com.tw/mops/#/web/t05st01" readonly>
         </label>
         <button id="copyCrawlerUrlBtn" type="button">複製</button>
       </div>
       <div class="url-line" style="margin-top: 5px;">
         <label>
-          測試網站網址
+          測試網站網址 (CAE Tracker)
           <input id="testSiteUrl" value="https://howtofightfraud.com/cae-tracker/" readonly>
         </label>
         <button id="copyTestSiteUrlBtn" type="button">複製</button>
       </div>
-      <div id="boundUrl" class="small muted">目前網址: 尚未監控</div>
+      <div id="boundUrl" class="small muted">目前監控網址: 尚未綁定</div>
     </section>
 
+    <!-- Section 2: RPA Query Settings -->
     <section class="card">
-      <h2>AI 自動化展示</h2>
-      <div class="concept-list">
-        <div>
-          <strong>高效資料流 (TWSE MOPS)</strong>
-          <p>自動填入代號與年份、點擊送出、解析表格並彙整結果。</p>
-        </div>
-        <div>
-          <strong>測試網站自動化 (CAE Tracker)</strong>
-          <p>自動遍歷測試網站各年份，提取並儲存所有公告數據。</p>
-        </div>
-      </div>
-      <div class="row preset-row">
-        <button id="dataFlowDemoBtn" type="button">高效資料流：台積電 113-115</button>
-        <button id="humanPacedDemoBtn" type="button">人類節奏展示：台積電 115</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>AI / 解析模式</h2>
-      <div class="segmented">
-        <label><input id="modeChromeOnly" type="radio" name="aiMode" value="chrome" checked> Chrome-only</label>
-        <label><input id="modeGemini" type="radio" name="aiMode" value="gemini"> Gemini API</label>
-      </div>
-      <div class="grid two">
-        <label>
-          Gemini 模型
-          <select id="geminiModel">
-            <option value="gemini-2.5">Gemini 2.5</option>
-            <option value="gemini-3.1-fl">Gemini 3.1 FL</option>
-            <option value="gemini-3.5">Gemini 3.5</option>
-          </select>
-        </label>
-        <label>
-          匯率 USD→TWD
-          <input id="exchangeRate" value="30" inputmode="decimal">
-        </label>
-      </div>
-      <label>
-        Gemini API Key
-        <input id="apiKey" type="password" placeholder="AIza...">
-      </label>
-      <div class="row">
-        <button id="saveKeyBtn" type="button">儲存 key</button>
-        <button id="testGeminiBtn" type="button">測試連線</button>
-        <button id="clearKeyBtn" type="button">清除 key</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>自然語言操作</h2>
-      <textarea id="aiPrompt" rows="4">幫我查 仁寶、台積電 113 到 114 年重大訊息，完成後下載 CSV</textarea>
-      <div class="row">
-        <button id="parseBtn" type="button">解析成操作計畫</button>
-        <button id="clearPromptBtn" type="button">清空</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>公司代碼解析</h2>
-      <div id="resolutionPreview" class="resolution">尚未解析公司名稱。</div>
-      <div id="targetList" class="targets"></div>
-    </section>
-
-    <section class="card">
-      <h2>AI 解析後的操作</h2>
-      <pre id="planPreview" class="plan">{ "status": "尚未解析" }</pre>
+      <h2>自動化操作設定</h2>
       <div class="grid two">
         <label>
           公司代號
-          <input id="companyCode" value="2330" inputmode="numeric">
+          <input id="companyCode" value="2330" inputmode="numeric" placeholder="例：2330">
         </label>
         <label>
-          保存結果 HTML
-          <select id="saveHtml">
-            <option value="false">否</option>
-            <option value="true">是</option>
-          </select>
+          每次查詢延遲 (ms)
+          <input id="delayMs" value="350" inputmode="numeric">
         </label>
         <label>
           起始民國年
@@ -157,42 +70,46 @@
           結束民國年
           <input id="yearEnd" value="114" inputmode="numeric">
         </label>
+        <label style="grid-column: span 2;">
+          保存結果 HTML
+          <select id="saveHtml">
+            <option value="false">否</option>
+            <option value="true">是</option>
+          </select>
+        </label>
       </div>
-      <div class="row confirm">
-        <button id="confirmRunBtn" type="button" disabled>確認執行</button>
-        <button id="cancelPlanBtn" type="button">取消計畫</button>
+      
+      <!-- Company Resolution Info -->
+      <div id="resolutionPreview" class="resolution" style="margin-top: 10px; font-size: 11px;">尚未解析公司。</div>
+      
+      <div class="row confirm" style="margin-top: 12px;">
+        <button id="confirmRunBtn" type="button">開始自動化</button>
         <button id="stopCrawlBtn" type="button" class="bad" style="background-color: var(--bad);" disabled>暫停</button>
+        <button id="resetPlanBtn" type="button">重設</button>
       </div>
     </section>
 
-    <section class="card">
-      <h2>估算成本</h2>
-      <div class="cost-grid">
-        <div><span>模型</span><strong id="costModel">Chrome-only</strong></div>
-        <div><span>輸入 tokens</span><strong id="inputTokens">0</strong></div>
-        <div><span>輸出 tokens</span><strong id="outputTokens">0</strong></div>
-        <div><span>USD</span><strong id="costUsd">$0.000000</strong></div>
-        <div><span>TWD</span><strong id="costTwd">NT$0.00</strong></div>
-      </div>
-    </section>
-
+    <!-- Section 3: Captured Results & Manual Export -->
     <section class="card">
       <h2>結果與工具</h2>
       <div class="summary">
         <div><strong id="totalRows">0</strong><span>筆資料</span></div>
-        <div><strong id="doneYears">0</strong><span>年度</span></div>
-        <div><strong id="errorCount">0</strong><span>錯誤</span></div>
+        <div><strong id="doneYears">0</strong><span>完成年度</span></div>
+        <div><strong id="errorCount">0</strong><span>錯誤數</span></div>
       </div>
+      
       <div class="row" style="margin-top: 8px;">
         <button id="csvBtn" type="button" disabled>下載 CSV (Excel)</button>
         <button id="jsonBtn" type="button" disabled>下載 JSON</button>
-        <button id="clearResultsBtn" type="button">清除結果</button>
-        <button id="clearAllBtn" type="button">清除全部</button>
+        <button id="clearResultsBtn" type="button">清除資料庫</button>
       </div>
-      <div style="margin-top: 8px;">
-        <input id="filterBox" placeholder="輸入關鍵字手動檢查 (如：稽核)">
+      
+      <div style="margin-top: 10px;">
+        <label for="filterBox">人工手動篩選與檢查 (欄位即時過濾)</label>
+        <input id="filterBox" placeholder="輸入關鍵字篩選結果 (例如：主管異動、稽核)">
       </div>
-      <div class="table-wrap">
+      
+      <div class="table-wrap" style="margin-top: 8px;">
         <table>
           <thead><tr><th>年</th><th>日期</th><th>公司</th><th>主旨/異動原因</th></tr></thead>
           <tbody id="recordBody"></tbody>
@@ -200,8 +117,9 @@
       </div>
     </section>
 
+    <!-- Section 4: Execution Log -->
     <section class="card">
-      <h2>執行紀錄</h2>
+      <h2>執行日誌</h2>
       <div id="logBox" class="log"></div>
     </section>
   </main>

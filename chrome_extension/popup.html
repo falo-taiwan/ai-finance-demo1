@@ -3,21 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Falo OpenQuery Agent v1.0</title>
+  <title>MOPS RPA 數據操作助理 v1.0</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <main class="shell">
     <header>
-      <h1>Falo OpenQuery 公開查詢代理</h1>
-      <p>針對 TWSE MOPS 歷史重大訊息查詢頁或測試網站逐年查詢指定公司，並彙總下載。</p>
+      <h1>MOPS RPA 操作助理</h1>
+      <p>自動操作官方 MOPS 或測試網站，進行跨年度數據擷取、本地儲存與手動篩選匯出。</p>
       <p class="watermark-note">Falo x Force Cheng 2026/6/16｜v1.0版</p>
     </header>
 
+    <!-- Section 1: Binding & URLs -->
+    <section class="bind-panel">
+      <div>
+        <h2>網頁監控與綁定</h2>
+        <p>可以開啟新的網頁分頁視窗並綁定，也可以手動打開網頁後點選綁定目前分頁。</p>
+      </div>
+      <div class="bind-buttons">
+        <button id="openBindBtn">開新視窗</button>
+        <button id="bindActiveBtn">監控目前分頁</button>
+      </div>
+      <div class="bound-line">目前監控網址：<span id="boundText">尚未監控</span></div>
+    </section>
+
+    <!-- Section 2: RPA Query Settings -->
     <section class="controls">
       <label>
         公司代號
-        <input id="companyCode" value="2330" inputmode="numeric">
+        <input id="companyCode" value="2330" inputmode="numeric" placeholder="例：2330">
       </label>
       <div class="year-grid">
         <label>
@@ -33,69 +47,56 @@
         每次查詢延遲 ms
         <input id="delayMs" value="350" inputmode="numeric">
       </label>
-      <label class="check">
-        <input id="fetchOriginals" type="checkbox">
-        保留原始公告/結果狀態
-      </label>
+      
       <label class="check">
         <input id="keepOriginalHtml" type="checkbox">
         JSON 匯出保留結果 HTML
       </label>
-      <label class="check" style="display: none;">
-        <input id="visualReplay" type="checkbox" checked>
-        同步導覽綁定視窗
+      <label class="check" style="display:none;">
+        <input id="fetchOriginals" type="checkbox">
+        保留結果狀態
       </label>
-      <div class="buttons">
-        <button id="runBtn">開始逐年查詢</button>
-        <button id="csvBtn" disabled>CSV</button>
-        <button id="jsonBtn" disabled>JSON</button>
+      
+      <div class="buttons" style="grid-column: span 3; margin-top: 10px;">
+        <button id="runBtn" style="background-color: var(--brand);">開始自動化</button>
+        <button id="stopBtn" class="bad" style="background-color: var(--bad);" disabled>暫停</button>
+        <button id="resetBtn">重設</button>
       </div>
     </section>
 
-    <section class="bind-panel">
-      <div>
-        <h2>綁定要爬蟲的網頁</h2>
-        <p>可以開啟新的查詢網頁視窗並綁定，也可以手動打開網頁後點選綁定目前分頁。</p>
-      </div>
-      <div class="bind-buttons">
-        <button id="openBindBtn">開新視窗並綁定</button>
-        <button id="bindActiveBtn">綁定目前分頁</button>
-      </div>
-      <div class="bound-line">目前監控：<span id="boundText">尚未綁定</span></div>
-    </section>
-
+    <!-- Section 3: Captured Results & Manual Export -->
     <section class="summary">
       <div><strong id="totalRows">0</strong><span>總筆數</span></div>
       <div><strong id="doneYears">0</strong><span>完成年度</span></div>
-      <div><strong id="errorCount">0</strong><span>錯誤</span></div>
+      <div><strong id="errorCount">0</strong><span>錯誤數</span></div>
       <div><strong id="statusText">待命</strong><span>狀態</span></div>
     </section>
 
     <section>
-      <h2>年度結果</h2>
-      <div class="table-wrap small">
-        <table>
-          <thead><tr><th>年</th><th>筆數</th><th>HTTP</th><th>ms</th><th>上限</th></tr></thead>
-          <tbody id="yearBody"></tbody>
-        </table>
+      <h2>結果與工具</h2>
+      <div class="buttons" style="margin-bottom: 10px;">
+        <button id="csvBtn" disabled>下載 CSV (Excel)</button>
+        <button id="jsonBtn" disabled>下載 JSON</button>
+        <button id="clearResultsBtn">清除資料庫</button>
       </div>
-    </section>
-
-    <section>
-      <h2>重大訊息紀錄</h2>
-      <input id="filterBox" placeholder="搜尋日期、公司、主旨 (例如輸入「稽核」手動篩選)">
+      
+      <div style="margin-bottom: 10px;">
+        <input id="filterBox" placeholder="輸入關鍵字手動檢查 (例如：主管異動、稽核)" style="width:100%;">
+      </div>
+      
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>年</th><th>日期</th><th>時間</th><th>代號</th><th>公司</th><th>主旨/異動原因</th><th>MOPS</th></tr>
+            <tr><th>年</th><th>日期</th><th>時間</th><th>代號</th><th>公司</th><th>主旨/異動原因</th><th>狀態</th></tr>
           </thead>
           <tbody id="recordBody"></tbody>
         </table>
       </div>
     </section>
 
+    <!-- Section 4: Log Box -->
     <section>
-      <h2>執行紀錄</h2>
+      <h2>執行日誌</h2>
       <div id="logBox" class="log"></div>
     </section>
   </main>
