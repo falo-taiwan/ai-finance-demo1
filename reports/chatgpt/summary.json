@@ -1,0 +1,21 @@
+{
+  "capped_slices": 0,
+  "extra_not_in_public_ids": 0,
+  "gap_report_path": "runs/full_rebuild_smart_public/gap_report.json",
+  "missing_from_public_record_ids": 2159,
+  "missing_record_ids_path": "runs/full_rebuild_smart_public/missing_record_ids.txt",
+  "original_attempted": 0,
+  "original_errors": 0,
+  "original_fetch_enabled": false,
+  "original_success": 0,
+  "output_dir": "runs/full_rebuild_smart_public",
+  "public_record_ids": 13238,
+  "raw_records": 11079,
+  "report_path": "runs/full_rebuild_smart_public/report.html",
+  "slice_errors": 0,
+  "started_at": "2026-06-15T22:40:52",
+  "total_elapsed_ms": 500036,
+  "total_elapsed_seconds": 500.036,
+  "total_records": 11079,
+  "total_slices": 357
+}

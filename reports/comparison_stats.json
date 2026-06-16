@@ -1,0 +1,53 @@
+{
+  "declared_total": 13239,
+  "combined_total": 11005,
+  "combined_coverage": 83.13,
+  "overlap_stats": {
+    "claude_only": 0,
+    "chatgpt_only": 0,
+    "gemini_only": 1,
+    "claude_chatgpt": 0,
+    "claude_gemini": 0,
+    "chatgpt_gemini": 0,
+    "all_three": 11004
+  },
+  "crawlers": {
+    "Claude": {
+      "name": "Claude Max5",
+      "method": "自適應分格 年→市場→月",
+      "duration_sec": 183.63,
+      "requests": 704,
+      "bytes": 839274485,
+      "unique_records": 11046,
+      "coverage_pct": 83.44,
+      "report_link": "reports/claude/report.html",
+      "data_link_json": "reports/claude/cae_tracker_full.json",
+      "data_link_csv": "reports/claude/cae_tracker_full.csv"
+    },
+    "ChatGPT": {
+      "name": "ChatGPT Pro",
+      "method": "固定分格 年→月→市場 / 智慧名單",
+      "duration_sec": 500.036,
+      "requests": 357,
+      "bytes": 0,
+      "unique_records": 11079,
+      "coverage_pct": 83.68,
+      "report_link": "reports/chatgpt/report.html",
+      "interactive_report_link": "reports/chatgpt/interactive_report.html",
+      "data_link_json": "reports/chatgpt/records.json",
+      "data_link_csv": "reports/chatgpt/records.csv"
+    },
+    "Gemini": {
+      "name": "Gemini (Antigravity)",
+      "method": "動態自適應分格 年→月→市場",
+      "duration_sec": 455.05,
+      "requests": 368,
+      "bytes": 651093951,
+      "unique_records": 11005,
+      "coverage_pct": 83.13,
+      "report_link": "reports/gemini/report.html",
+      "data_link_json": "reports/gemini/gemini_tracker_full.json",
+      "data_link_csv": "reports/gemini/gemini_tracker_full.csv"
+    }
+  }
+}
