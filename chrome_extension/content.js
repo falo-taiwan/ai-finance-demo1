@@ -1,4 +1,4 @@
-// content.js - Content Script for MOPS Automation Extension
+// content.js - Content Script for MOPS Automation Extension (v2.0)
 
 let hudElement = null;
 
@@ -20,84 +20,92 @@ function runAutomationStep() {
     }
 
     showHUD(task.year, task.companyCode, task.index + 1, task.total);
+    updateHUDStatus("正在等待官方查詢表單載入...");
 
-    // 1. Locate form elements on TWSE MOPS official page
-    const coIdInput = document.querySelector('input[name="co_id"]') || document.getElementById("co_id");
-    const yearInput = document.querySelector('input[name="year"]') || document.querySelector('select[name="year"]') || document.getElementById("year");
-    const monthSelect = document.querySelector('select[name="month"]') || document.getElementById("month");
+    // Poll for SPA input elements to appear (up to 5 seconds)
+    let checkCount = 0;
+    const maxChecks = 15; // 15 * 300ms = 4.5 seconds
     
-    // Form submit button
-    const submitBtn = document.querySelector('input[type="button"][value="查詢"]') || 
-                      document.querySelector('button[type="submit"]') || 
-                      document.querySelector('input[type="submit"]') ||
-                      document.querySelector('.ma-btn-primary') ||
-                      document.querySelector('input[value=" 查詢 "]');
+    const checkTimer = setInterval(() => {
+      const coIdInput = document.querySelector('input[name="co_id"]') || document.getElementById("co_id");
+      const yearInput = document.querySelector('input[name="year"]') || document.querySelector('select[name="year"]') || document.getElementById("year");
+      const submitBtn = document.querySelector('input[type="button"][value="查詢"]') || 
+                        document.querySelector('button[type="submit"]') || 
+                        document.querySelector('input[type="submit"]') ||
+                        document.querySelector('.ma-btn-primary') ||
+                        document.querySelector('input[value=" 查詢 "]') ||
+                        document.querySelector('input[value="查詢"]') ||
+                        document.querySelector('input[value*="查詢"]');
 
-    if (!coIdInput || !yearInput) {
-      updateHUDStatus("❌ 錯誤：找不到官方查詢輸入框 (co_id/year)", true);
-      chrome.runtime.sendMessage({ action: "LOG", text: "錯誤：找不到官方查詢輸入框 (co_id/year)。自動化中斷。", type: "error" });
-      return;
-    }
-
-    // 2. Set form values
-    coIdInput.value = task.companyCode;
-    
-    // Set Year (MOPS select or input text)
-    if (yearInput.tagName === "SELECT") {
-      yearInput.value = task.year;
-    } else {
-      yearInput.value = task.year;
-    }
-    
-    // Set Month to "ALL" (usually value "" or "0")
-    if (monthSelect) {
-      monthSelect.value = ""; 
-    }
-
-    // 3. Record current AJAX result HTML to detect change
-    const ajaxContainer = document.getElementById("ajaxOut") || document.getElementById("ajaxOut1") || document.body;
-    const oldHtml = ajaxContainer.innerHTML;
-
-    updateHUDStatus(`正在送出 ${task.year} 年度查詢...`);
-
-    // 4. Click the query button to submit AJAX POST
-    if (submitBtn) {
-      submitBtn.click();
-    } else {
-      // Fallback: Submit enclosing form
-      const form = coIdInput.closest("form");
-      if (form) form.submit();
-      else {
-        updateHUDStatus("❌ 錯誤：找不到查詢按鈕或表單", true);
-        return;
-      }
-    }
-
-    // 5. Poll container for AJAX load finish
-    let pollCount = 0;
-    const maxPolls = 60; // 30 seconds max
-    
-    const interval = setInterval(() => {
-      const currentHtml = ajaxContainer.innerHTML;
-      const hasChanged = currentHtml !== oldHtml;
-      const isLoaded = !currentHtml.includes("查詢中") && 
-                       !currentHtml.includes("Loading") && 
-                       !currentHtml.includes("請稍候");
-
-      if (hasChanged && isLoaded && currentHtml.trim().length > 100) {
-        clearInterval(interval);
-        updateHUDStatus(`正在提取 ${task.year} 年度資料...`);
-        extractAndSubmit(task.year, task.companyCode);
+      if (coIdInput && yearInput && submitBtn) {
+        clearInterval(checkTimer);
+        // Form is loaded! Start the form filling and submit
+        executeFormFillAndSubmit(coIdInput, yearInput, submitBtn, task);
       } else {
-        pollCount++;
-        if (pollCount >= maxPolls) {
-          clearInterval(interval);
-          updateHUDStatus(`⚠️ 查詢超時，嘗試讀取現有內容...`);
-          extractAndSubmit(task.year, task.companyCode);
+        checkCount++;
+        if (checkCount >= maxChecks) {
+          clearInterval(checkTimer);
+          updateHUDStatus("❌ 找不到查詢表單。請點選上方『重大訊息/公告』->『歷史重大訊息』", true);
+          chrome.runtime.sendMessage({ 
+            action: "LOG", 
+            text: "錯誤：找不到查詢欄位。請確保頁面已點選並加載『歷史重大訊息』頁。", 
+            type: "error" 
+          });
         }
       }
-    }, 500);
+    }, 300);
   });
+}
+
+function executeFormFillAndSubmit(coIdInput, yearInput, submitBtn, task) {
+  // Set values
+  coIdInput.value = task.companyCode;
+  
+  if (yearInput.tagName === "SELECT") {
+    yearInput.value = task.year;
+  } else {
+    yearInput.value = task.year;
+  }
+  
+  // Set month to empty (all months)
+  const monthSelect = document.querySelector('select[name="ma_month"]') || document.querySelector('select[name="month"]') || document.getElementById("month");
+  if (monthSelect) {
+    monthSelect.value = "";
+  }
+
+  // Record current AJAX result HTML to detect change
+  const ajaxContainer = document.getElementById("ajaxOut") || document.getElementById("ajaxOut1") || document.body;
+  const oldHtml = ajaxContainer.innerHTML;
+
+  updateHUDStatus(`正在送出 ${task.year} 年度查詢...`);
+
+  // Submit form
+  submitBtn.click();
+
+  // Poll container for AJAX load finish
+  let pollCount = 0;
+  const maxPolls = 60; // 30 seconds max
+  
+  const interval = setInterval(() => {
+    const currentHtml = ajaxContainer.innerHTML;
+    const hasChanged = currentHtml !== oldHtml;
+    const isLoaded = !currentHtml.includes("查詢中") && 
+                     !currentHtml.includes("Loading") && 
+                     !currentHtml.includes("請稍候");
+
+    if (hasChanged && isLoaded && currentHtml.trim().length > 100) {
+      clearInterval(interval);
+      updateHUDStatus(`正在提取 ${task.year} 年度重大訊息...`);
+      extractAndSubmit(task.year, task.companyCode);
+    } else {
+      pollCount++;
+      if (pollCount >= maxPolls) {
+        clearInterval(interval);
+        updateHUDStatus(`⚠️ 查詢超時，嘗試讀取現有內容...`);
+        extractAndSubmit(task.year, task.companyCode);
+      }
+    }
+  }, 500);
 }
 
 // Extract table data and send to background service worker
@@ -106,7 +114,6 @@ function extractAndSubmit(year, companyCode) {
   const tables = ajaxContainer.querySelectorAll("table");
   let records = [];
 
-  // Parse major announcement tables
   tables.forEach(table => {
     const rows = table.querySelectorAll("tr");
     rows.forEach(row => {
@@ -118,15 +125,12 @@ function extractAndSubmit(year, companyCode) {
         const spokeTime = cells[4].textContent.trim();
         const subject = cells[5].textContent.trim();
 
-        // Validate company code matches and subject contains target keyword (e.g. 稽核主管)
-        // If subject doesn't contain the keyword, it's still mapped to keep all records if needed,
-        // but let's filter for relevant announcements to match the project theme!
         if (rowCompanyCode === companyCode) {
-          const isAuditSupervisorChange = subject.includes("稽核主管") || subject.includes("稽核");
+          const isAuditSupervisorChange = subject.includes("稽核") || subject.includes("主管異動");
           
           if (isAuditSupervisorChange) {
             records.push({
-              "市場": "上市", // Default to listed for TSMC 2330
+              "市場": "上市",
               "代號": rowCompanyCode,
               "公司簡稱": rowCompanyName,
               "公告日期": announceDate,
@@ -148,7 +152,6 @@ function extractAndSubmit(year, companyCode) {
     });
   });
 
-  // Send extracted records back to background
   chrome.runtime.sendMessage({
     action: "SUBMIT_DATA",
     year: year,
@@ -183,7 +186,6 @@ function showHUD(year, companyCode, currentStep, totalSteps) {
 
     document.body.appendChild(hudElement);
     
-    // Injected style for pulsing animation
     const style = document.createElement("style");
     style.innerText = `
       .hud-pulse {

@@ -1,4 +1,4 @@
-// background.js - Service Worker for MOPS Automation Extension
+// background.js - Service Worker for MOPS Automation Extension (v2.0)
 
 let state = {
   tabId: null,
@@ -23,14 +23,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       state.isAutomating = false;
       chrome.storage.local.set({ state });
       
-      // Wait for index page to load, then redirect to t05st01
+      // Wait for index page to load, then redirect to the new SPA hash URL!
       chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
         if (tabId === state.tabId && info.status === "complete") {
           chrome.tabs.onUpdated.removeListener(listener);
           
           setTimeout(() => {
-            chrome.tabs.update(state.tabId, { url: "https://mops.twse.com.tw/mops/web/t05st01" }, () => {
-              chrome.runtime.sendMessage({ action: "LOG", text: "官方網頁開啟並綁定成功！頁籤 ID: " + state.tabId });
+            chrome.tabs.update(state.tabId, { url: "https://mops.twse.com.tw/mops/#/web/t05st01" }, () => {
+              chrome.runtime.sendMessage({ action: "LOG", text: "官方網頁開啟並已引導至新版重大訊息頁 (mops/#/web/t05st01)！" });
             });
           }, 1500);
         }
@@ -53,8 +53,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.storage.local.set({ state: curState }, () => {
         chrome.runtime.sendMessage({ action: "LOG", text: `開始自動化查詢！公司: ${message.companyCode}, 年份: ${message.years.join(",")}` });
         
-        // Trigger content script to run the first task
-        chrome.tabs.sendMessage(curState.tabId, { action: "TRIGGER_NEXT" });
+        // Ensure the tab is actually on the query page before sending the trigger
+        chrome.tabs.get(curState.tabId, (tab) => {
+          if (!tab.url.includes("t05st01")) {
+            chrome.runtime.sendMessage({ action: "LOG", text: "偵測到頁籤偏離，正在重新導向至重大訊息歷史查詢頁..." });
+            chrome.tabs.update(curState.tabId, { url: "https://mops.twse.com.tw/mops/#/web/t05st01" }, () => {
+              // Wait for SPA router to load the page, then trigger content script
+              setTimeout(() => {
+                chrome.tabs.sendMessage(curState.tabId, { action: "TRIGGER_NEXT" });
+              }, 2500);
+            });
+          } else {
+            chrome.tabs.sendMessage(curState.tabId, { action: "TRIGGER_NEXT" });
+          }
+        });
       });
     });
     sendResponse({ status: "started" });
@@ -106,7 +118,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.storage.local.set({ state: curState }, () => {
         chrome.runtime.sendMessage({ 
           action: "LOG", 
-          text: `年份 ${message.year} 查詢完成，抓取到 ${newRecords.length} 筆資料。累計 ${curState.records.length} 筆。` 
+          text: `年份 ${message.year} 查詢完成，抓取到 ${newRecords.length} 筆重大訊息。累計 ${curState.records.length} 筆。` 
         });
         
         // Update popup stats
@@ -121,7 +133,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         } else {
           curState.isAutomating = false;
           chrome.storage.local.set({ state: curState }, () => {
-            chrome.runtime.sendMessage({ action: "LOG", text: `🎉 自動化查詢完畢！共抓取 ${curState.records.length} 筆資料。請點擊下載匯出。` });
+            chrome.runtime.sendMessage({ action: "LOG", text: `🎉 自動化查詢完畢！共抓取 ${curState.records.length} 筆重大訊息。請點擊下載匯出。` });
             chrome.runtime.sendMessage({ action: "CRAWL_DONE" });
           });
         }
