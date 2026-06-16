@@ -1,4 +1,4 @@
-// content.js - Content Script for MOPS Automation Extension (v2.0)
+// content.js - Content Script for MOPS Automation Extension (v4.0)
 
 let hudElement = null;
 
@@ -13,6 +13,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Run a single automation step
 function runAutomationStep() {
+  // Check if we are inside the correct frame that actually has the query fields.
+  // If not, exit silently (no HUD, no errors) to prevent parent frame from blocking.
+  const coIdInput = document.querySelector('input[name="co_id"]') || document.getElementById("co_id");
+  const yearInput = document.querySelector('input[name="year"]') || document.querySelector('select[name="year"]') || document.getElementById("year");
+  
+  if (!coIdInput || !yearInput) {
+    return; // Exit silently for other frames/parent windows
+  }
+
   chrome.runtime.sendMessage({ action: "GET_TASK" }, (task) => {
     if (!task || task.status !== "RUNNING") {
       removeHUD();
@@ -20,40 +29,24 @@ function runAutomationStep() {
     }
 
     showHUD(task.year, task.companyCode, task.index + 1, task.total);
-    updateHUDStatus("正在等待官方查詢表單載入...");
+    updateHUDStatus("正在自動輸入資料並送出查詢...");
 
-    // Poll for SPA input elements to appear (up to 5 seconds)
-    let checkCount = 0;
-    const maxChecks = 15; // 15 * 300ms = 4.5 seconds
-    
-    const checkTimer = setInterval(() => {
-      const coIdInput = document.querySelector('input[name="co_id"]') || document.getElementById("co_id");
-      const yearInput = document.querySelector('input[name="year"]') || document.querySelector('select[name="year"]') || document.getElementById("year");
-      const submitBtn = document.querySelector('input[type="button"][value="查詢"]') || 
-                        document.querySelector('button[type="submit"]') || 
-                        document.querySelector('input[type="submit"]') ||
-                        document.querySelector('.ma-btn-primary') ||
-                        document.querySelector('input[value=" 查詢 "]') ||
-                        document.querySelector('input[value="查詢"]') ||
-                        document.querySelector('input[value*="查詢"]');
+    // Find submit button in this frame
+    const submitBtn = document.querySelector('input[type="button"][value="查詢"]') || 
+                      document.querySelector('button[type="submit"]') || 
+                      document.querySelector('input[type="submit"]') ||
+                      document.querySelector('.ma-btn-primary') ||
+                      document.querySelector('input[value=" 查詢 "]') ||
+                      document.querySelector('input[value="查詢"]') ||
+                      document.querySelector('input[value*="查詢"]');
 
-      if (coIdInput && yearInput && submitBtn) {
-        clearInterval(checkTimer);
-        // Form is loaded! Start the form filling and submit
-        executeFormFillAndSubmit(coIdInput, yearInput, submitBtn, task);
-      } else {
-        checkCount++;
-        if (checkCount >= maxChecks) {
-          clearInterval(checkTimer);
-          updateHUDStatus("❌ 找不到查詢表單。請點選上方『重大訊息/公告』->『歷史重大訊息』", true);
-          chrome.runtime.sendMessage({ 
-            action: "LOG", 
-            text: "錯誤：找不到查詢欄位。請確保頁面已點選並加載『歷史重大訊息』頁。", 
-            type: "error" 
-          });
-        }
-      }
-    }, 300);
+    if (!submitBtn) {
+      updateHUDStatus("❌ 錯誤：找不到『查詢』提交按鈕", true);
+      chrome.runtime.sendMessage({ action: "LOG", text: "錯誤：在表單中找不到『查詢』提交按鈕。", type: "error" });
+      return;
+    }
+
+    executeFormFillAndSubmit(coIdInput, yearInput, submitBtn, task);
   });
 }
 
