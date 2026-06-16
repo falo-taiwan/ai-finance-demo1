@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <span class="badge">RPA AUTOMATION</span>
+      <h2>MOPS 自動化查詢</h2>
+      <p class="subtitle">官方重大訊息 (t05st01) 自動化操作</p>
+    </div>
+
+    <!-- Configuration Form -->
+    <div class="form-section">
+      <div class="form-group">
+        <label for="companyCode">公司代號</label>
+        <input type="text" id="companyCode" value="2330" placeholder="例：2330">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startYear">起始年份 (ROC)</label>
+          <select id="startYear">
+            <!-- Dynamically populated or static -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="endYear">結束年份 (ROC)</label>
+          <select id="endYear">
+            <!-- Dynamically populated or static -->
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Control Buttons -->
+    <div class="controls-section">
+      <button id="bindBtn" class="btn btn-outline">🔗 1. 開啟並綁定 MOPS 網頁</button>
+      <div class="btn-row">
+        <button id="startBtn" class="btn btn-emerald" disabled>▶ 2. 開始自動化</button>
+        <button id="stopBtn" class="btn btn-secondary" disabled>⏸ 暫停</button>
+      </div>
+    </div>
+
+    <!-- Logs Console -->
+    <div class="console-section">
+      <div class="console-header">
+        <span>🤖 執行日誌</span>
+        <button id="clearLogBtn">清除</button>
+      </div>
+      <div id="logConsole" class="log-console">
+        <div class="log-item system">系統就緒，請先點擊綁定官方網頁。</div>
+      </div>
+    </div>
+
+    <!-- Output Download -->
+    <div class="output-section">
+      <span class="meta-data">累計抓取: <strong id="recordsCount">0</strong> 筆公告</span>
+      <div class="btn-row">
+        <button id="downloadJsonBtn" class="btn btn-secondary" disabled>💾 下載 JSON</button>
+        <button id="downloadCsvBtn" class="btn btn-secondary" disabled>📊 下載 CSV (Excel)</button>
+      </div>
+    </div>
+
+    <!-- Signature Footer -->
+    <div class="footer">
+      <span>Falo x Force Cheng 2026/6/15 版權存證</span>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

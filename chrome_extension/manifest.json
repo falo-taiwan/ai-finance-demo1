@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "MOPS 官方重大訊息自動化查詢外掛",
+  "version": "1.0",
+  "description": "自動化操作公開資訊觀測站 (MOPS) 重大訊息查詢表單，支援指定公司及多年份自動循環抓取。",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://mops.twse.com.tw/*",
+    "*://mopsov.twse.com.tw/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MOPS 自動化操作外掛"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://mops.twse.com.tw/*",
+        "*://mopsov.twse.com.tw/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

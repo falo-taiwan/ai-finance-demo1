@@ -34,6 +34,10 @@ def copy_original_files():
     shutil.copy(f"{CHATGPT_DIR}/records.csv", f"{OUT_DIR}/chatgpt/records.csv")
     shutil.copy(f"{CHATGPT_DIR}/summary.json", f"{OUT_DIR}/chatgpt/summary.json")
 
+    # Zip Chrome Extension
+    print("Packaging Chrome Extension...", flush=True)
+    shutil.make_archive("reports/mops_automation_extension", "zip", ".", "chrome_extension")
+
 def load_claude():
     with open(f"{OUT_DIR}/claude/cae_tracker_full.json", "r", encoding="utf-8") as f:
         return json.load(f)
