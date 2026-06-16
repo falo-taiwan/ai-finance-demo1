@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="OpenQuery Agent logo">
+  <rect width="128" height="128" rx="24" fill="#f5f7fa"/>
+  <rect x="22" y="24" width="70" height="58" rx="10" fill="#ffffff" stroke="#183f4a" stroke-width="6"/>
+  <path d="M22 40h70" stroke="#183f4a" stroke-width="6"/>
+  <circle cx="34" cy="32" r="3" fill="#f2b84b"/>
+  <circle cx="45" cy="32" r="3" fill="#1f7a83"/>
+  <circle cx="56" cy="32" r="3" fill="#183f4a"/>
+  <path d="M36 54h39M36 66h29M36 78h20" stroke="#1f7a83" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="82" cy="76" r="20" fill="#ffffff" stroke="#1f7a83" stroke-width="7"/>
+  <path d="M97 91l17 17" stroke="#183f4a" stroke-width="9" stroke-linecap="round"/>
+  <path d="M75 75l6 6 12-15" fill="none" stroke="#f2b84b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

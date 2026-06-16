@@ -1,210 +1,151 @@
-// popup.js - Controller for Chrome Extension Popup (v3.0)
+const el = id => document.getElementById(id);
 
-document.addEventListener("DOMContentLoaded", () => {
-  initYearDropdowns();
-  bindUIEvents();
-  restoreState();
-});
+let currentState = {
+  running: false,
+  results: [],
+  yearly: [],
+  logs: [],
+  errors: []
+};
 
-function initYearDropdowns() {
-  const startSelect = document.getElementById("startYear");
-  const endSelect = document.getElementById("endYear");
+function optionsFromUi() {
+  return {
+    companyCode: el("companyCode").value.trim() || "2330",
+    yearStart: el("yearStart").value.trim() || "110",
+    yearEnd: el("yearEnd").value.trim() || "114",
+    delayMs: Number(el("delayMs").value || 350),
+    fetchOriginals: el("fetchOriginals").checked,
+    keepOriginalHtml: el("keepOriginalHtml").checked,
+    visualReplay: el("visualReplay").checked
+  };
+}
 
-  for (let y = 115; y >= 84; y--) {
-    const optStart = document.createElement("option");
-    optStart.value = y;
-    optStart.textContent = `${y} 年`;
-    if (y === 110) optStart.selected = true; // Default start
-    startSelect.appendChild(optStart);
+function sendMessage(message) {
+  return new Promise(resolve => chrome.runtime.sendMessage(message, resolve));
+}
 
-    const optEnd = document.createElement("option");
-    optEnd.value = y;
-    optEnd.textContent = `${y} 年`;
-    if (y === 114) optEnd.selected = true; // Default end
-    endSelect.appendChild(optEnd);
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function render(state) {
+  currentState = state || currentState;
+  el("statusText").textContent = currentState.running ? "執行中" : "待命";
+  el("boundText").textContent = currentState.boundTabId
+    ? `Tab ${currentState.boundTabId}｜${currentState.boundUrl || ""}`
+    : "尚未監控";
+  el("runBtn").disabled = currentState.running;
+  
+  renderYearly(currentState.yearly);
+  renderRecords(currentState.results);
+  renderLogs(currentState.logs);
+}
+
+function renderYearly(yearly) {
+  el("yearBody").innerHTML = yearly.map(item => `
+    <tr>
+      <td>${escapeHtml(item.year)}</td>
+      <td>${escapeHtml(item.rows || 0)}</td>
+      <td>${escapeHtml(item.status || "")}</td>
+      <td>${escapeHtml(item.elapsedMs || "")}</td>
+      <td class="${item.capped ? "warn" : ""}">${item.capped ? "是" : "否"}</td>
+    </tr>
+  `).join("");
+}
+
+function renderRecords(records) {
+  const query = el("filterBox").value.trim().toLowerCase();
+  const filtered = records.filter(row => {
+    if (!query) return true;
+    return [
+      row.announceDate,
+      row.announceTime,
+      row.companyCode,
+      row.companyName,
+      row.subject,
+      row.reason,
+      row.changeType,
+      row.rawText
+    ].join(" ").toLowerCase().includes(query);
+  });
+  
+  el("totalRows").textContent = filtered.length;
+  el("doneYears").textContent = currentState.yearly.length;
+  el("errorCount").textContent = currentState.errors.length;
+  
+  el("csvBtn").disabled = filtered.length === 0;
+  el("jsonBtn").disabled = filtered.length === 0;
+
+  el("recordBody").innerHTML = filtered.map(row => {
+    const originalStatus = row.original ? row.original.status : "";
+    const originalClass = originalStatus && String(originalStatus) !== "200" ? "bad" : "";
+    const displaySubject = row.subject || row.reason || row.changeType || "";
+    return `
+      <tr>
+        <td>${escapeHtml(row.queryYear)}</td>
+        <td>${escapeHtml(row.announceDate)}</td>
+        <td>${escapeHtml(row.announceTime)}</td>
+        <td>${escapeHtml(row.companyCode)}</td>
+        <td>${escapeHtml(row.companyName)}</td>
+        <td class="reason">${escapeHtml(displaySubject)}</td>
+        <td class="${originalClass}">${escapeHtml(originalStatus || "未留")}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderLogs(logs) {
+  el("logBox").innerHTML = logs.slice(-120).map(item => {
+    const time = item.ts ? item.ts.slice(11, 19) : "";
+    return `<div>[${escapeHtml(time)}] ${escapeHtml(item.message)}</div>`;
+  }).join("");
+  el("logBox").scrollTop = el("logBox").scrollHeight;
+}
+
+async function runQuery() {
+  render({ ...currentState, running: true, logs: [{ ts: new Date().toISOString(), message: "送出查詢任務" }], results: [], yearly: [], errors: [] });
+  const response = await sendMessage({ type: "QUERY_YEARS", options: optionsFromUi() });
+  if (!response || !response.ok) {
+    render({
+      ...currentState,
+      running: false,
+      errors: [{ error: response && response.error ? response.error : "unknown error" }],
+      logs: [...currentState.logs, { ts: new Date().toISOString(), message: `失敗：${response && response.error ? response.error : "unknown error"}` }]
+    });
+    return;
   }
+  render(response.state);
 }
 
-function bindUIEvents() {
-  const copyUrlBtn = document.getElementById("copyUrlBtn");
-  const startBtn = document.getElementById("startBtn");
-  const stopBtn = document.getElementById("stopBtn");
-  const clearLogBtn = document.getElementById("clearLogBtn");
-  const downloadJsonBtn = document.getElementById("downloadJsonBtn");
-  const downloadCsvBtn = document.getElementById("downloadCsvBtn");
+async function openAndBind() {
+  const response = await sendMessage({ type: "OPEN_BIND", options: optionsFromUi() });
+  if (response && response.state) render(response.state);
+}
 
-  // Copy official URL
-  copyUrlBtn.addEventListener("click", () => {
-    const targetUrl = "https://mops.twse.com.tw/mops/#/web/t05st01";
-    navigator.clipboard.writeText(targetUrl).then(() => {
-      addLog("系統", "已複製官方查詢網址至剪貼簿！");
-      copyUrlBtn.textContent = "📋 已複製網址！";
-      setTimeout(() => {
-        copyUrlBtn.textContent = "📋 複製官方查詢網址";
-      }, 2000);
-    }).catch(err => {
-      console.error("Failed to copy URL:", err);
-      addLog("系統", "複製失敗，網址為: " + targetUrl, "error");
-    });
-  });
+async function bindActive() {
+  const response = await sendMessage({ type: "BIND_ACTIVE" });
+  if (response && response.state) render(response.state);
+}
 
-  // Start Crawl on Active Tab
-  startBtn.addEventListener("click", () => {
-    const companyCode = document.getElementById("companyCode").value.trim();
-    if (!companyCode) {
-      addLog("系統", "請輸入公司代號！", "error");
-      return;
-    }
+async function download(kind) {
+  await sendMessage({ type: "DOWNLOAD", kind });
+}
 
-    const startYear = parseInt(document.getElementById("startYear").value);
-    const endYear = parseInt(document.getElementById("endYear").value);
-
-    const years = [];
-    if (startYear <= endYear) {
-      for (let y = startYear; y <= endYear; y++) years.push(y.toString());
-    } else {
-      for (let y = startYear; y >= endYear; y--) years.push(y.toString());
-    }
-
-    // Query active tab dynamically
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length === 0) {
-        addLog("系統", "找不到當前活動頁籤！", "error");
-        return;
-      }
-      
-      const activeTab = tabs[0];
-      
-      chrome.runtime.sendMessage({
-        action: "START_CRAWL",
-        companyCode,
-        years,
-        tabId: activeTab.id
-      }, (response) => {
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        toggleInputs(true);
-      });
-    });
-  });
-
-  // Stop / Pause Crawl
-  stopBtn.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ action: "STOP_CRAWL" }, (response) => {
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    });
-  });
-
-  clearLogBtn.addEventListener("click", () => {
-    const consoleDiv = document.getElementById("logConsole");
-    consoleDiv.innerHTML = "";
-  });
-
-  // Downloads
-  downloadJsonBtn.addEventListener("click", () => {
-    chrome.storage.local.get("state", (data) => {
-      const records = (data.state && data.state.records) || [];
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(records, null, 2));
-      const downloadAnchor = document.createElement("a");
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `mops_automation_${data.state.companyCode}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    });
-  });
-
-  downloadCsvBtn.addEventListener("click", () => {
-    chrome.storage.local.get("state", (data) => {
-      const records = (data.state && data.state.records) || [];
-      if (records.length === 0) return;
-      
-      const fields = ["市場", "代號", "公司簡稱", "公告日期", "異動情形", "新任者", "舊任者", "生效日期", "異動原因", "公告來源"];
-      
-      let csvContent = "\uFEFF";
-      csvContent += fields.join(",") + "\n";
-      
-      records.forEach(r => {
-        const row = fields.map(f => {
-          let val = r[f] || "";
-          val = val.replace(/"/g, '""');
-          if (val.includes(",") || val.includes("\n") || val.includes('"')) {
-            val = `"${val}"`;
-          }
-          return val;
-        });
-        csvContent += row.join(",") + "\n";
-      });
-      
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8-sig;" });
-      const url = URL.createObjectURL(blob);
-      const downloadAnchor = document.createElement("a");
-      downloadAnchor.setAttribute("href", url);
-      downloadAnchor.setAttribute("download", `mops_automation_${data.state.companyCode}.csv`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      URL.revokeObjectURL(url);
-    });
-  });
-
-  // Message receiver in popup
-  chrome.runtime.onMessage.addListener((message) => {
-    if (message.action === "LOG") {
-      addLog("背景", message.text);
-    }
-    if (message.action === "UPDATE_STATS") {
-      document.getElementById("recordsCount").innerText = message.count;
-      downloadJsonBtn.disabled = message.count === 0;
-      downloadCsvBtn.disabled = message.count === 0;
-    }
-    if (message.action === "CRAWL_DONE") {
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      toggleInputs(false);
-    }
+if (globalThis.chrome && chrome.runtime && chrome.runtime.onMessage) {
+  chrome.runtime.onMessage.addListener(message => {
+    if (message.type === "STATE_UPDATE") render(message.state);
   });
 }
 
-function restoreState() {
-  chrome.storage.local.get("state", (data) => {
-    if (data.state) {
-      const state = data.state;
-      document.getElementById("companyCode").value = state.companyCode || "2330";
-      document.getElementById("recordsCount").innerText = state.records ? state.records.length : 0;
-      
-      if (state.isAutomating) {
-        document.getElementById("startBtn").disabled = true;
-        document.getElementById("stopBtn").disabled = false;
-        toggleInputs(true);
-      } else {
-        document.getElementById("startBtn").disabled = false;
-        document.getElementById("stopBtn").disabled = true;
-      }
-      
-      if (state.records && state.records.length > 0) {
-        document.getElementById("downloadJsonBtn").disabled = false;
-        document.getElementById("downloadCsvBtn").disabled = false;
-      }
-    }
-  });
-}
+el("runBtn").addEventListener("click", runQuery);
+el("openBindBtn").addEventListener("click", openAndBind);
+el("bindActiveBtn").addEventListener("click", bindActive);
+el("csvBtn").addEventListener("click", () => download("csv"));
+el("jsonBtn").addEventListener("click", () => download("json"));
+el("filterBox").addEventListener("input", () => renderRecords(currentState.results));
 
-function toggleInputs(disable) {
-  document.getElementById("companyCode").disabled = disable;
-  document.getElementById("startYear").disabled = disable;
-  document.getElementById("endYear").disabled = disable;
-}
-
-function addLog(source, text, type = "normal") {
-  const consoleDiv = document.getElementById("logConsole");
-  const item = document.createElement("div");
-  item.className = `log-item ${type}`;
-  
-  const timeStr = new Date().toLocaleTimeString();
-  item.textContent = `[${timeStr}] [${source}] ${text}`;
-  
-  consoleDiv.appendChild(item);
-  consoleDiv.scrollTop = consoleDiv.scrollHeight;
-}
+sendMessage({ type: "GET_STATE" }).then(response => render(response && response.state));

@@ -1,0 +1,242 @@
+[
+  {
+    "alias": "三商餐飲",
+    "matches": [
+      {
+        "code": "2905",
+        "score": 8,
+        "primary_name": "三商"
+      },
+      {
+        "code": "7705",
+        "score": 4,
+        "primary_name": "三商餐飲"
+      }
+    ]
+  },
+  {
+    "alias": "凱基銀行",
+    "matches": [
+      {
+        "code": "2837",
+        "score": 20,
+        "primary_name": "凱基銀行"
+      },
+      {
+        "code": "2883",
+        "score": 4,
+        "primary_name": "凱基金"
+      }
+    ]
+  },
+  {
+    "alias": "千附精密",
+    "matches": [
+      {
+        "code": "6829",
+        "score": 16,
+        "primary_name": "千附精密"
+      },
+      {
+        "code": "8383",
+        "score": 8,
+        "primary_name": "千附"
+      }
+    ]
+  },
+  {
+    "alias": "友霖",
+    "matches": [
+      {
+        "code": "4166",
+        "score": 69,
+        "primary_name": "友霖"
+      },
+      {
+        "code": "4120",
+        "score": 4,
+        "primary_name": "友華"
+      }
+    ]
+  },
+  {
+    "alias": "台新藥",
+    "matches": [
+      {
+        "code": "6838",
+        "score": 24,
+        "primary_name": "台新藥"
+      },
+      {
+        "code": "4746",
+        "score": 4,
+        "primary_name": "台耀"
+      }
+    ]
+  },
+  {
+    "alias": "和潤企業",
+    "matches": [
+      {
+        "code": "2207",
+        "score": 12,
+        "primary_name": "和泰車"
+      },
+      {
+        "code": "6592",
+        "score": 12,
+        "primary_name": "和潤企業"
+      }
+    ]
+  },
+  {
+    "alias": "和運租車",
+    "matches": [
+      {
+        "code": "2207",
+        "score": 4,
+        "primary_name": "和泰車"
+      },
+      {
+        "code": "7855",
+        "score": 4,
+        "primary_name": "和運租車"
+      }
+    ]
+  },
+  {
+    "alias": "和雲行動服務",
+    "matches": [
+      {
+        "code": "6592",
+        "score": 4,
+        "primary_name": "和潤企業"
+      },
+      {
+        "code": "7855",
+        "score": 4,
+        "primary_name": "和運租車"
+      }
+    ]
+  },
+  {
+    "alias": "和雲行動服務股份有限公司",
+    "matches": [
+      {
+        "code": "6592",
+        "score": 4,
+        "primary_name": "和潤企業"
+      },
+      {
+        "code": "7855",
+        "score": 4,
+        "primary_name": "和運租車"
+      }
+    ]
+  },
+  {
+    "alias": "宏碁創達",
+    "matches": [
+      {
+        "code": "7706",
+        "score": 8,
+        "primary_name": "宏碁創達"
+      },
+      {
+        "code": "6751",
+        "score": 4,
+        "primary_name": "智聯服務"
+      }
+    ]
+  },
+  {
+    "alias": "宏碩系統",
+    "matches": [
+      {
+        "code": "6698",
+        "score": 12,
+        "primary_name": "旭暉應材"
+      },
+      {
+        "code": "6895",
+        "score": 8,
+        "primary_name": "宏碩系統"
+      }
+    ]
+  },
+  {
+    "alias": "富威電力",
+    "matches": [
+      {
+        "code": "3712",
+        "score": 12,
+        "primary_name": "永崴投控"
+      },
+      {
+        "code": "6994",
+        "score": 12,
+        "primary_name": "富威電力"
+      }
+    ]
+  },
+  {
+    "alias": "康全電訊",
+    "matches": [
+      {
+        "code": "3047",
+        "score": 4,
+        "primary_name": "訊舟"
+      },
+      {
+        "code": "8089",
+        "score": 4,
+        "primary_name": "康全電訊"
+      }
+    ]
+  },
+  {
+    "alias": "攸泰科技",
+    "matches": [
+      {
+        "code": "6928",
+        "score": 8,
+        "primary_name": "攸泰科技"
+      },
+      {
+        "code": "3701",
+        "score": 4,
+        "primary_name": "大眾控"
+      }
+    ]
+  },
+  {
+    "alias": "森崴能源",
+    "matches": [
+      {
+        "code": "3712",
+        "score": 4,
+        "primary_name": "永崴投控"
+      },
+      {
+        "code": "6806",
+        "score": 4,
+        "primary_name": "森崴能源"
+      }
+    ]
+  },
+  {
+    "alias": "永信藥品",
+    "matches": [
+      {
+        "code": "3705",
+        "score": 28,
+        "primary_name": "永信"
+      },
+      {
+        "code": "1716",
+        "score": 8,
+        "primary_name": "永信藥品"
+      }
+    ]
+  }
+]
