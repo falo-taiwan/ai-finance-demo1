@@ -1,4 +1,4 @@
-// background.js - Service Worker for MOPS Automation Extension (v2.0)
+// background.js - Service Worker for MOPS Automation Extension (v3.0)
 
 let state = {
   tabId: null,
@@ -16,57 +16,21 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Message listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "BIND_TAB") {
-    // Navigate index first to set cookies/session, then deep link to bypass TWSE error redirect
-    chrome.tabs.create({ url: "https://mops.twse.com.tw/mops/web/index" }, (tab) => {
-      state.tabId = tab.id;
-      state.isAutomating = false;
-      chrome.storage.local.set({ state });
-      
-      // Wait for index page to load, then redirect to the new SPA hash URL!
-      chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-        if (tabId === state.tabId && info.status === "complete") {
-          chrome.tabs.onUpdated.removeListener(listener);
-          
-          setTimeout(() => {
-            chrome.tabs.update(state.tabId, { url: "https://mops.twse.com.tw/mops/#/web/t05st01" }, () => {
-              chrome.runtime.sendMessage({ action: "LOG", text: "官方網頁開啟並已引導至新版重大訊息頁 (mops/#/web/t05st01)！" });
-            });
-          }, 1500);
-        }
-      });
-      
-      sendResponse({ status: "binding", tabId: tab.id });
-    });
-    return true; // Keep channel open
-  }
-
   if (message.action === "START_CRAWL") {
     chrome.storage.local.get("state", (data) => {
       let curState = data.state || state;
       curState.isAutomating = true;
+      curState.tabId = message.tabId; // Target user's active tab
       curState.companyCode = message.companyCode;
       curState.years = message.years;
       curState.currentYearIndex = 0;
       curState.records = []; // Clear previous runs
       
       chrome.storage.local.set({ state: curState }, () => {
-        chrome.runtime.sendMessage({ action: "LOG", text: `開始自動化查詢！公司: ${message.companyCode}, 年份: ${message.years.join(",")}` });
+        chrome.runtime.sendMessage({ action: "LOG", text: `開始對頁籤 ${message.tabId} 執行自動化！公司: ${message.companyCode}, 年份: ${message.years.join(",")}` });
         
-        // Ensure the tab is actually on the query page before sending the trigger
-        chrome.tabs.get(curState.tabId, (tab) => {
-          if (!tab.url.includes("t05st01")) {
-            chrome.runtime.sendMessage({ action: "LOG", text: "偵測到頁籤偏離，正在重新導向至重大訊息歷史查詢頁..." });
-            chrome.tabs.update(curState.tabId, { url: "https://mops.twse.com.tw/mops/#/web/t05st01" }, () => {
-              // Wait for SPA router to load the page, then trigger content script
-              setTimeout(() => {
-                chrome.tabs.sendMessage(curState.tabId, { action: "TRIGGER_NEXT" });
-              }, 2500);
-            });
-          } else {
-            chrome.tabs.sendMessage(curState.tabId, { action: "TRIGGER_NEXT" });
-          }
-        });
+        // Trigger content script on target tab directly
+        chrome.tabs.sendMessage(curState.tabId, { action: "TRIGGER_NEXT" });
       });
     });
     sendResponse({ status: "started" });
@@ -108,7 +72,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get("state", (data) => {
       let curState = data.state || state;
       
-      // Merge records
       const newRecords = message.records || [];
       curState.records = curState.records.concat(newRecords);
       

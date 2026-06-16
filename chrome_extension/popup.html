@@ -22,13 +22,13 @@
         <div class="form-group">
           <label for="startYear">起始年份 (ROC)</label>
           <select id="startYear">
-            <!-- Dynamically populated or static -->
+            <!-- Dynamically populated -->
           </select>
         </div>
         <div class="form-group">
           <label for="endYear">結束年份 (ROC)</label>
           <select id="endYear">
-            <!-- Dynamically populated or static -->
+            <!-- Dynamically populated -->
           </select>
         </div>
       </div>
@@ -36,9 +36,9 @@
 
     <!-- Control Buttons -->
     <div class="controls-section">
-      <button id="bindBtn" class="btn btn-outline">🔗 1. 開啟並綁定 MOPS 網頁</button>
+      <button id="copyUrlBtn" class="btn btn-outline">📋 複製官方查詢網址</button>
       <div class="btn-row">
-        <button id="startBtn" class="btn btn-emerald" disabled>▶ 2. 開始自動化</button>
+        <button id="startBtn" class="btn btn-emerald">▶ 開始自動化 (目前頁籤)</button>
         <button id="stopBtn" class="btn btn-secondary" disabled>⏸ 暫停</button>
       </div>
     </div>
@@ -50,7 +50,7 @@
         <button id="clearLogBtn">清除</button>
       </div>
       <div id="logConsole" class="log-console">
-        <div class="log-item system">系統就緒，請先點擊綁定官方網頁。</div>
+        <div class="log-item system">請先將瀏覽器頁籤切換至官方重大訊息頁，然後點擊「開始自動化」。</div>
       </div>
     </div>
 

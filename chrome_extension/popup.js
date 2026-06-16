@@ -1,4 +1,4 @@
-// popup.js - Controller for Chrome Extension Popup
+// popup.js - Controller for Chrome Extension Popup (v3.0)
 
 document.addEventListener("DOMContentLoaded", () => {
   initYearDropdowns();
@@ -10,7 +10,6 @@ function initYearDropdowns() {
   const startSelect = document.getElementById("startYear");
   const endSelect = document.getElementById("endYear");
 
-  // Populate ROC years from 84 to 115
   for (let y = 115; y >= 84; y--) {
     const optStart = document.createElement("option");
     optStart.value = y;
@@ -27,25 +26,29 @@ function initYearDropdowns() {
 }
 
 function bindUIEvents() {
-  const bindBtn = document.getElementById("bindBtn");
+  const copyUrlBtn = document.getElementById("copyUrlBtn");
   const startBtn = document.getElementById("startBtn");
   const stopBtn = document.getElementById("stopBtn");
   const clearLogBtn = document.getElementById("clearLogBtn");
   const downloadJsonBtn = document.getElementById("downloadJsonBtn");
   const downloadCsvBtn = document.getElementById("downloadCsvBtn");
 
-  // Bind official tab
-  bindBtn.addEventListener("click", () => {
-    addLog("系統", "正在開啟官方 MOPS index 頁面並進行驗證跳轉...");
-    chrome.runtime.sendMessage({ action: "BIND_TAB" }, (response) => {
-      if (response && response.tabId) {
-        startBtn.disabled = false;
-        bindBtn.textContent = "✅ 已綁定官方 MOPS 視窗";
-      }
+  // Copy official URL
+  copyUrlBtn.addEventListener("click", () => {
+    const targetUrl = "https://mops.twse.com.tw/mops/#/web/t05st01";
+    navigator.clipboard.writeText(targetUrl).then(() => {
+      addLog("系統", "已複製官方查詢網址至剪貼簿！");
+      copyUrlBtn.textContent = "📋 已複製網址！";
+      setTimeout(() => {
+        copyUrlBtn.textContent = "📋 複製官方查詢網址";
+      }, 2000);
+    }).catch(err => {
+      console.error("Failed to copy URL:", err);
+      addLog("系統", "複製失敗，網址為: " + targetUrl, "error");
     });
   });
 
-  // Start Crawl
+  // Start Crawl on Active Tab
   startBtn.addEventListener("click", () => {
     const companyCode = document.getElementById("companyCode").value.trim();
     if (!companyCode) {
@@ -56,7 +59,6 @@ function bindUIEvents() {
     const startYear = parseInt(document.getElementById("startYear").value);
     const endYear = parseInt(document.getElementById("endYear").value);
 
-    // Build years list
     const years = [];
     if (startYear <= endYear) {
       for (let y = startYear; y <= endYear; y++) years.push(y.toString());
@@ -64,14 +66,25 @@ function bindUIEvents() {
       for (let y = startYear; y >= endYear; y--) years.push(y.toString());
     }
 
-    chrome.runtime.sendMessage({
-      action: "START_CRAWL",
-      companyCode,
-      years
-    }, (response) => {
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-      toggleInputs(true);
+    // Query active tab dynamically
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length === 0) {
+        addLog("系統", "找不到當前活動頁籤！", "error");
+        return;
+      }
+      
+      const activeTab = tabs[0];
+      
+      chrome.runtime.sendMessage({
+        action: "START_CRAWL",
+        companyCode,
+        years,
+        tabId: activeTab.id
+      }, (response) => {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        toggleInputs(true);
+      });
     });
   });
 
@@ -109,14 +122,12 @@ function bindUIEvents() {
       
       const fields = ["市場", "代號", "公司簡稱", "公告日期", "異動情形", "新任者", "舊任者", "生效日期", "異動原因", "公告來源"];
       
-      // Add UTF-8 BOM
       let csvContent = "\uFEFF";
       csvContent += fields.join(",") + "\n";
       
       records.forEach(r => {
         const row = fields.map(f => {
           let val = r[f] || "";
-          // Escape quotes
           val = val.replace(/"/g, '""');
           if (val.includes(",") || val.includes("\n") || val.includes('"')) {
             val = `"${val}"`;
@@ -163,14 +174,13 @@ function restoreState() {
       document.getElementById("companyCode").value = state.companyCode || "2330";
       document.getElementById("recordsCount").innerText = state.records ? state.records.length : 0;
       
-      if (state.tabId) {
-        document.getElementById("startBtn").disabled = state.isAutomating;
-        document.getElementById("bindBtn").textContent = "✅ 已綁定官方 MOPS 視窗";
-      }
-      
       if (state.isAutomating) {
+        document.getElementById("startBtn").disabled = true;
         document.getElementById("stopBtn").disabled = false;
         toggleInputs(true);
+      } else {
+        document.getElementById("startBtn").disabled = false;
+        document.getElementById("stopBtn").disabled = true;
       }
       
       if (state.records && state.records.length > 0) {
